@@ -17,6 +17,7 @@ class ApiUnavailableException extends Exception
         if ($request->expectsJson()) {
             return response()->json(['message' => 'The API is currently unavailable.'], 503);
         }
+
         return redirect()->route('home')->with('error', 'The API is currently unavailable.');
     }
 }

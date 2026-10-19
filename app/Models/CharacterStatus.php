@@ -30,5 +30,4 @@ enum CharacterStatus: string
             self::Unknown => 'badge-neutral',
         };
     }
-
 }

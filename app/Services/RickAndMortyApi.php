@@ -22,13 +22,11 @@ class RickAndMortyApi
 
     public function __construct(
         private string $url,
-        private int    $timeout,
-        private int    $cachelifetime,
-        private int    $coolofftime,
-        private int    $dailylimit,
-    )
-    {
-    }
+        private int $timeout,
+        private int $cachelifetime,
+        private int $coolofftime,
+        private int $dailylimit,
+    ) {}
 
     private function http(): PendingRequest
     {
@@ -44,11 +42,12 @@ class RickAndMortyApi
         if ($exception instanceof RequestException) {
             return $exception->response->serverError();
         }
+
         return false;
     }
 
     /**
-     * @param array<string, mixed> $query
+     * @param  array<string, mixed>  $query
      * @return array<string, mixed>|null
      *
      * @throws ApiUnavailableException
@@ -65,29 +64,37 @@ class RickAndMortyApi
         try {
             $response = $this->http()->get($path, $query);
         } catch (ConnectionException $exception) {
-            throw new ApiUnavailableException(previous: $exception);
+            throw new ApiUnavailableException('Could not connect to the API', previous: $exception);
         }
         if ($response->notFound()) {
             return null;
         }
         if ($response->failed()) {
             if ($response->tooManyRequests()) {
-                Cache::put(self::COOLOFF_KEY, true, (int)$response->header('Retry-After') ?: $this->coolofftime);
+                Cache::put(self::COOLOFF_KEY, true, (int) $response->header('Retry-After') ?: $this->coolofftime);
             }
             throw new ApiUnavailableException("The API returned {$response->status()}");
         }
+
         return $response->json();
     }
 
+    /**
+     * @param  array<string, string>  $filters
+     * @return LengthAwarePaginator<int, Character>
+     *
+     * @throws ApiUnavailableException
+     */
     public function search(array $filters, int $page = 1): LengthAwarePaginator
     {
         ksort($filters);
         $jsondata = json_encode([$filters, 'page' => $page], JSON_THROW_ON_ERROR);
         $hashed = md5($jsondata);
-        $key = 'rickandmorty:characters:' . $hashed;
-        $data = Cache::remember($key, $this->cachelifetime, fn() => $this->get('/character', [...$filters, 'page' => $page]) ?? []
+        $key = 'rickandmorty:characters:'.$hashed;
+        $data = Cache::remember($key, $this->cachelifetime, fn () => $this->get('/character', [...$filters, 'page' => $page]) ?? []
         );
         $characters = array_map(Character::fromApi(...), $data['results'] ?? []);
+
         return new LengthAwarePaginator(
             items: $characters,
             total: $data['info']['count'] ?? 0,
@@ -96,16 +103,22 @@ class RickAndMortyApi
         );
     }
 
+    /**
+     * @param  array<int, int>  $ids
+     * @return array<int, Episode>
+     *
+     * @throws ApiUnavailableException
+     */
     public function episodes(array $ids): array
     {
         $ids = array_values(array_unique($ids));
         if (empty($ids)) {
             return [];
         }
-        $items = array_filter(Cache::many(array_map(fn(int $id) => "rickandmorty:episode:{$id}", $ids)));
-        $missing = array_values(array_filter($ids, fn(int $id) => !isset($items["rickandmorty:episode:{$id}"])));
-        if (!empty($missing)) {
-            $data = $this->get('/episode/' . implode(',', $missing)) ?? [];
+        $items = array_filter(Cache::many(array_map(fn (int $id) => "rickandmorty:episode:{$id}", $ids)));
+        $missing = array_values(array_filter($ids, fn (int $id) => ! isset($items["rickandmorty:episode:{$id}"])));
+        if (! empty($missing)) {
+            $data = $this->get('/episode/'.implode(',', $missing)) ?? [];
             $results = isset($data['id']) ? [$data] : $data;
             foreach ($results as $result) {
                 $key = "rickandmorty:episode:{$result['id']}";
@@ -118,6 +131,7 @@ class RickAndMortyApi
             $episode = Episode::fromApi($item);
             $episodes[$episode->id] = $episode;
         }
+
         return $episodes;
     }
 }

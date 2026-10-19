@@ -1,6 +1,6 @@
 <div class="card bg-base-100 w-full shadow-sm">
     <figure>
-        <img class="w-full " src="{{ $character->image }}" alt="{{ $character->name }}">
+        <img class="w-full aspect-square object-cover" src="{{ $character->image }}" alt="{{ $character->name }}">
     </figure>
     <div class="card-body items-center">
         <h2 class="card-title">{{ $character->name }}</h2>

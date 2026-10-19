@@ -5,16 +5,14 @@ namespace App\Models;
 class Episode
 {
     public function __construct(
-        public int    $id,
+        public int $id,
         public string $name,
         public string $airdate,
         public string $episode
-    )
-    {
-    }
+    ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromApi(array $data): self
     {
@@ -25,5 +23,4 @@ class Episode
             episode: $data['episode']
         );
     }
-
 }

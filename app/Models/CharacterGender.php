@@ -3,7 +3,6 @@
 namespace App\Models;
 
 enum CharacterGender: string
-
 {
     case Female = 'female';
     case Male = 'male';
@@ -24,5 +23,4 @@ enum CharacterGender: string
             self::Unknown => 'checked:btn-neutral',
         };
     }
-
 }

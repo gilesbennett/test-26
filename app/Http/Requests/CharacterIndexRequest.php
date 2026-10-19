@@ -6,10 +6,19 @@ use App\Models\CharacterGender;
 use App\Models\CharacterStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 
 class CharacterIndexRequest extends FormRequest
 {
+    /**
+     * Get the URL to redirect to on a validation error.
+     */
+    protected function getRedirectUrl(): string
+    {
+        return route('encyclopaedia.get', Arr::except($this->query(), $this->getValidatorInstance()->errors()->keys()));
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -42,12 +51,12 @@ class CharacterIndexRequest extends FormRequest
     {
         return array_filter(
             $this->safe()->only(['name', 'status', 'gender']),
-            fn(mixed $value): bool => $value !== null && $value !== '',
+            fn (mixed $value): bool => $value !== null && $value !== '',
         );
     }
 
     public function page(): int
     {
-        return (int)($this->validated()['page'] ?? 1);
+        return (int) ($this->validated()['page'] ?? 1);
     }
 }
