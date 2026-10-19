@@ -15,5 +15,9 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "daisyui": "^5.7.50",
+        "tailwind": "^4.0.0"
     }
 }
