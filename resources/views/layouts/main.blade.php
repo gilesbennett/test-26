@@ -9,5 +9,6 @@
 <body class="flex flex-col">
 @include('includes.navbar')
 @yield('content')
+@yield('pagination')
 </body>
 </html>
