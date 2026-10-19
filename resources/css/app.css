@@ -81,3 +81,17 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Dark mode switcher */
+.switcher-icon-dark {
+    @apply block dark:hidden
+}
+
+.switcher-icon-light {
+    @apply hidden dark:block
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    display: none;
+}

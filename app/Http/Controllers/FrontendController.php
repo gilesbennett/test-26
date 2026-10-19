@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Character;
+use App\Http\Requests\CharacterIndexRequest;
 use App\Services\RickAndMortyApi;
 use Illuminate\View\View;
 
 class FrontendController extends Controller
 {
-    public function index(RickAndMortyApi $api): View
+    public function index(CharacterIndexRequest $request, RickAndMortyApi $api): View
     {
-        $data = $api->get('/character/', []);
-        $characters = array_map(Character::fromApi(...), $data['results'] ?? []);
-        return view('encyclopaedia')->with(compact('characters'));
+        $characters = $api->search($request->filters(), $request->page())->withPath(route('encyclopaedia.get'));
+        return view('encyclopaedia', [
+            'characters' => $characters,
+            'filters' => $request->filters()
+        ]);
+
     }
 
-    public function test(RickAndMortyApi $api): View
-    {
-        $page = 1;
-        $data = $api->get('/character', ['page' => $page]);
-        print_r($data);
-        die;
-    }
 }

@@ -1,6 +1,7 @@
 @extends('layouts.main')
 
 @section('content')
+    @include('includes.searchbar')
     <div>
         <div class="px-4 pt-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-8 gap-x-8">
@@ -16,3 +17,8 @@
     </div>
 @endsection
 
+@section('pagination')
+    <div class="my-8 flex justify-center">
+        {{ $characters->withQueryString()->onEachSide(1)->links() }}
+    </div>
+@endsection
