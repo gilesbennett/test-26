@@ -97,10 +97,8 @@ class RickAndMortyApi
         if (empty($ids)) {
             return [];
         }
-
         $data = $this->get('/episode/' . implode(',', $ids)) ?? [];
         $results = isset($data['id']) ? [$data] : $data;
-
         $episodes = [];
         foreach ($results as $result) {
             $episode = Episode::fromApi($result);

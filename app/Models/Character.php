@@ -37,4 +37,9 @@ class Character
             ),);
     }
 
+    public function hasSubType(): bool
+    {
+        return !empty($this->type);
+    }
+
 }

@@ -22,3 +22,10 @@
         {{ $characters->withQueryString()->onEachSide(1)->links() }}
     </div>
 @endsection
+
+@section('modals')
+    @foreach ($characters as $character)
+        @include('includes.modal', ['character' => $character, 'episodes' => $episodes])
+    @endforeach
+@endsection
+

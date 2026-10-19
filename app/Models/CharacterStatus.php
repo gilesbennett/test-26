@@ -22,4 +22,13 @@ enum CharacterStatus: string
         };
     }
 
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::Alive => 'badge-success',
+            self::Dead => 'badge-error',
+            self::Unknown => 'badge-neutral',
+        };
+    }
+
 }
