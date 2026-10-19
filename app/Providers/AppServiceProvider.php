@@ -14,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(RickAndMortyApi::class, fn() => new RickAndMortyApi(
             url: config('services.rickandmorty.url'),
-            timeout: config('services.rickandmorty.timeout')
+            timeout: config('services.rickandmorty.timeout'),
+            coolofftime: config('services.rickandmorty.coolofftime'),
+            dailylimit: config('services.rickandmorty.dailylimit')
         ));
     }
 

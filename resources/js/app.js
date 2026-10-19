@@ -23,5 +23,13 @@ Alpine.data('filters', () => ({
     },
 }))
 
+Alpine.data('dismissable', () => ({
+    open: true,
+
+    close() {
+        this.open = false
+    },
+}))
+
 window.Alpine = Alpine
 Alpine.start()

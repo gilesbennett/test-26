@@ -13,7 +13,8 @@ class FrontendController extends Controller
         $characters = $api->search($request->filters(), $request->page())->withPath(route('encyclopaedia.get'));
         return view('encyclopaedia', [
             'characters' => $characters,
-            'filters' => $request->filters()
+            'filters' => $request->filters(),
+            'episodes' => $api->episodes($characters->getCollection()->flatMap->episodeIds->all()),
         ]);
 
     }

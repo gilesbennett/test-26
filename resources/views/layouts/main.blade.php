@@ -7,8 +7,10 @@
 </head>
 
 <body class="flex flex-col">
+@include('includes.flash')
 @include('includes.navbar')
 @yield('content')
 @yield('pagination')
+@yield('modals')
 </body>
 </html>

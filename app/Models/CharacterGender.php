@@ -15,4 +15,14 @@ enum CharacterGender: string
         return ucfirst($this->value);
     }
 
+    public function radioClass(): string
+    {
+        return match ($this) {
+            self::Female => 'checked:btn-success',
+            self::Male => 'checked:btn-warning',
+            self::Genderless => 'checked:btn-error',
+            self::Unknown => 'checked:btn-neutral',
+        };
+    }
+
 }
