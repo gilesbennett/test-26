@@ -4,6 +4,9 @@ namespace App\Models;
 
 class Character
 {
+    /**
+     * @param array<int, int> $episodeIds
+     */
     public function __construct(
         public int             $id,
         public string          $name,
@@ -19,6 +22,9 @@ class Character
     {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromApi(array $data): self
     {
         return new self(

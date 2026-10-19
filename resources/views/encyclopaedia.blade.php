@@ -18,7 +18,7 @@
 @endsection
 
 @section('pagination')
-    <div class="my-8 flex justify-center">
+    <div class="my-8 flex justify-center [&_nav>div:last-child]:flex-col [&_nav>div:last-child]:items-center">
         {{ $characters->withQueryString()->onEachSide(1)->links() }}
     </div>
 @endsection

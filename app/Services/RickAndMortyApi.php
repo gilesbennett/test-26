@@ -23,6 +23,7 @@ class RickAndMortyApi
     public function __construct(
         private string $url,
         private int    $timeout,
+        private int    $cachelifetime,
         private int    $coolofftime,
         private int    $dailylimit,
     )
@@ -80,7 +81,12 @@ class RickAndMortyApi
 
     public function search(array $filters, int $page = 1): LengthAwarePaginator
     {
-        $data = $this->get('/character', [...$filters, 'page' => $page]);
+        ksort($filters);
+        $jsondata = json_encode([$filters, 'page' => $page], JSON_THROW_ON_ERROR);
+        $hashed = md5($jsondata);
+        $key = 'rickandmorty:characters:' . $hashed;
+        $data = Cache::remember($key, $this->cachelifetime, fn() => $this->get('/character', [...$filters, 'page' => $page]) ?? []
+        );
         $characters = array_map(Character::fromApi(...), $data['results'] ?? []);
         return new LengthAwarePaginator(
             items: $characters,
@@ -88,7 +94,6 @@ class RickAndMortyApi
             perPage: self::PAGE_SIZE,
             currentPage: $page
         );
-
     }
 
     public function episodes(array $ids): array
@@ -97,14 +102,22 @@ class RickAndMortyApi
         if (empty($ids)) {
             return [];
         }
-        $data = $this->get('/episode/' . implode(',', $ids)) ?? [];
-        $results = isset($data['id']) ? [$data] : $data;
+        $items = array_filter(Cache::many(array_map(fn(int $id) => "rickandmorty:episode:{$id}", $ids)));
+        $missing = array_values(array_filter($ids, fn(int $id) => !isset($items["rickandmorty:episode:{$id}"])));
+        if (!empty($missing)) {
+            $data = $this->get('/episode/' . implode(',', $missing)) ?? [];
+            $results = isset($data['id']) ? [$data] : $data;
+            foreach ($results as $result) {
+                $key = "rickandmorty:episode:{$result['id']}";
+                Cache::put($key, $result, $this->cachelifetime);
+                $items[$key] = $result;
+            }
+        }
         $episodes = [];
-        foreach ($results as $result) {
-            $episode = Episode::fromApi($result);
+        foreach ($items as $item) {
+            $episode = Episode::fromApi($item);
             $episodes[$episode->id] = $episode;
         }
-
         return $episodes;
     }
 }
