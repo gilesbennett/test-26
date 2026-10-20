@@ -63,12 +63,17 @@ on the front of the site.
 Search is in place for character name. Filters are in place for status and gender - species and type deliberately left
 out because they're free text fields.
 
-Rate limits - Cloudflare looks to have a burst limit, which operates (presumably) in addition to the 10,000 / day limit.
-The cool-off period will honour this.
+Rate limits - The API documents a limit of 10,000 requests a day, which the app guards with its own daily budget (
+RICKANDMORTY_DAILYLIMIT). In practice, Cloudflare also enforces a short burst limit (error 1015, Retry-After: 6). The
+cool-off honours Retry-After, so the app stops calling the API until the window has passed.
+
+NB: on a fresh install the cache is empty, so changing filters rapidly will probably trip the burst limit briefly. The
+app shows a "temporarily unavailable" message and recovers within seconds, and pages that are already cached are
+unaffected. On the plus side, it makes the error handling easy to demonstrate.
 
 Connection errors and 5xx errors are retried with deliberately short delays to cap request times at about 10s total.
 
-429 errors aren't retried, a deliberate deisng choice.
+429 errors aren't retried, a deliberate design choice.
 
 Errors are handled gracefully - deliberately redirecting back to the landing page along with a flash message, to avoid a
 loop being entered if the previous page's cached had expired (admittedly unlikely, but you never know...)
