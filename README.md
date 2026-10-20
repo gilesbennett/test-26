@@ -1,58 +1,76 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
 ## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and
+creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in
+many web projects, such as:
 
 - [Simple, fast routing engine](https://laravel.com/docs/routing).
 - [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache)
+  storage.
 - Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
 - Database agnostic [schema migrations](https://laravel.com/docs/migrations).
 - [Robust background job processing](https://laravel.com/docs/queues).
 - [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Installation requirements
 
-## Learning Laravel
+- PHP8.4
+- Composer
+- Node and npm
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Setup
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- git clone
+- cd into your installation directory
+- composer install
+- cp .env.example .env
+- Edit APP_URL to match the URL being used
+- php artisan key:generate
+- npm install && npm run build
+- php artisan serve (or use Herd)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Configuration
 
-## Agentic Development
+Other than editing APP_URL, none is required - the five R&M-specific values in .env are :
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- **RICKANDMORTY_URL** : the URL of the API;
+- **RICKANDMORTY_TIMEOUT** : the timeout (in seconds) for each HTTP request to the API;
+- **RICKANDMORTY_CACHELIFETIME** : the cache lifetime (in seconds) - deliberately set long;
+- **RICKANDMORTY_COOLOFFTIME** : because of Cloudflare caching (see below), a 30 second (by default) cool-off period
+  after a
+  429 response is received that does not send a Retry-After header (if a Retry-After header is sent, the value in that
+  is used instead);
+- **RICKANDMORTY_DAILYLIMIT** : the API docs give a daily limit of 10,000 requests from one IP, so this is set 10% below
+  to
+  err on the side of caution.
 
-```bash
-composer require laravel/boost --dev
+## Architecture
 
-php artisan boost:install
-```
+- MVC without a database - the API serves as the data source, the models are plain value objects with fromApi();
+- Request flow is route -> CharacterIndexRequest -> Controller -> Service -> Model -> View
+- No SDK used for the API.
+- Tailwind + DaisyUI for simple frontend.
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Notes
 
-## Contributing
+The data is effectively static, hence a long cache lifetime. Filters are sorted alphabetically by key and hashed with
+their values and the current page.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Episodes are retrieved en-masse and then cached individually. Only bare bones information (name, ID, air date) is used
+on the front of the site.
 
-## Code of Conduct
+Search is in place for character name. Filters are in place for status and gender - species and type deliberately left
+out because they're free text fields.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Rate limits - Cloudflare looks to have a burst limit, which operates (presumably) in addition to the 10,000 / day limit.
+The cool-off period will honour this.
 
-## Security Vulnerabilities
+Connection errors and 5xx errors are retried with deliberately short delays to cap request times at about 10s total.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+429 errors aren't retried, a deliberate deisng choice.
 
-## License
+Errors are handled gracefully - deliberately redirecting back to the landing page along with a flash message, to avoid a
+loop being entered if the previous page's cached had expired (admittedly unlikely, but you never know...)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Middleware handles hammering of requests by an individual IP (max 60/minute).
